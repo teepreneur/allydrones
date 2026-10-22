@@ -1,0 +1,937 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ally Drones</title>
+<meta name="description" content="Ally Drones: drone pilot training, aerial mapping and building inspection in Accra, Ghana.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drone's-eye page. Navy "altitude" sections alternate with Field White "ground" sections; a camera HUD frames the aerials and a live altimeter tracks the scroll. */
+:root{
+  --navy:#0B1E3D; --navy-700:#122B52; --navy-line:#2A4470;
+  --sky:#3FA9F5; --sky-ink:#1F6FB0;
+  --signal:#FF6B1A; --signal-ink:#C24E0C;
+  --field:#F6F3EE; --paper:#FFFFFF; --charcoal:#22252B; --slate:#4A505C;
+  --mist:#A9B8CF; --haze:#D5DDE9; --sand-line:#DDD6CA; --clay:#B5643C;
+  --font-display:"Space Grotesk","Helvetica Neue",Arial,sans-serif;
+  --font-sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --gutter:clamp(16px,5vw,72px);
+  --r-sm:4px; --r-md:8px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--navy);color:var(--field);font-family:var(--font-sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:3px}
+.ground :focus-visible{outline-color:var(--sky-ink)}
+h1,h2,h3{font-family:var(--font-display);font-weight:500;margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:var(--gutter)}
+.mono{font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.eyebrow{font-family:var(--font-mono);font-size:14px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}
+.ground .eyebrow{color:var(--signal-ink)}
+.h2{font-size:clamp(36px,5vw,60px);line-height:1.02;letter-spacing:-.03em}
+.lead{font-size:clamp(18px,1.6vw,21px);line-height:1.55;color:var(--haze);max-width:62ch}
+.ground{background:var(--field);color:var(--charcoal)}
+.ground .h2,.ground h3{color:var(--navy)}
+.ground .lead{color:var(--slate)}
+section{padding-block:clamp(72px,10vw,120px)}
+.sec-head{display:flex;flex-direction:column;gap:18px;margin-bottom:48px;max-width:860px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;font:500 16px/1 var(--font-sans);padding:15px 22px;border-radius:var(--r-sm);border:2px solid transparent;cursor:pointer;text-decoration:none;transition:background .15s,color .15s,border-color .15s,transform .15s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--signal);color:var(--navy)}
+.btn-primary:hover{background:var(--field)}
+.btn-secondary{background:transparent;color:var(--field);border-color:var(--field)}
+.btn-secondary:hover{background:var(--field);color:var(--navy)}
+.ground .btn-secondary{color:var(--navy);border-color:var(--navy)}
+.ground .btn-secondary:hover{background:var(--navy);color:var(--field)}
+.btn .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.tag{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:3px;border:1px solid var(--navy-line);color:var(--mist)}
+.ground .tag{border-color:var(--sand-line);color:var(--slate)}
+.tag-outline{border-color:var(--signal);color:var(--signal)}
+.ground .tag-outline{border-color:var(--signal-ink);color:var(--signal-ink)}
+.tag-live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--signal);animation:blink 1.4s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+
+/* Beacon */
+.beacon{display:inline-flex;align-items:center;gap:12px;font:600 22px/1 var(--font-display);letter-spacing:-.02em;color:var(--field);text-decoration:none}
+.beacon svg{width:30px;height:30px;flex:none}
+.beacon .ring{stroke:var(--sky)} .beacon .dot{fill:var(--signal)}
+
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);background:rgba(11,30,61,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--navy-line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;height:64px}
+.nav-links{display:flex;gap:26px;font:500 13px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
+.nav-links a{text-decoration:none;color:var(--mist);padding:6px 0;border-bottom:2px solid transparent}
+.nav-links a:hover,.nav-links a.on{color:var(--field);border-color:var(--signal)}
+.nav .btn{padding:11px 16px;font-size:14px}
+@media (max-width:980px){.nav-links{display:none}}
+@media (max-width:420px){.nav .btn span.long{display:none}}
+
+/* HERO */
+.hero{position:relative;padding:0;min-height:min(820px,100svh);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate;cursor:crosshair}
+.hero-img{position:absolute;inset:-40px;background:url(img/hero-accra-aerial.jpg) center/cover no-repeat;z-index:-3;transform:scale(1.04);will-change:transform;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.hero::before{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(11,30,61,.94) 0%,rgba(11,30,61,.78) 38%,rgba(11,30,61,.18) 75%,rgba(11,30,61,.35) 100%),linear-gradient(180deg,rgba(11,30,61,.6) 0%,rgba(11,30,61,0) 22%,rgba(11,30,61,0) 70%,rgba(11,30,61,.92) 100%)}
+.scan{position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(246,243,238,.035) 0 1px,transparent 1px 4px)}
+.corner{position:absolute;width:28px;height:28px;border:0 solid var(--field);opacity:.9;pointer-events:none}
+.c-tl{top:84px;left:18px;border-top-width:2px;border-left-width:2px}
+.c-tr{top:84px;right:18px;border-top-width:2px;border-right-width:2px}
+.c-bl{bottom:18px;left:18px;border-bottom-width:2px;border-left-width:2px}
+.c-br{bottom:18px;right:18px;border-bottom-width:2px;border-right-width:2px}
+.hud-top{position:absolute;top:92px;left:62px;right:62px;display:flex;justify-content:space-between;gap:16px;font:400 12px/1.4 var(--font-mono);letter-spacing:.1em;color:var(--field);pointer-events:none}
+.rec{display:inline-flex;align-items:center;gap:8px}
+.rec::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--signal);animation:blink 1.4s steps(2) infinite}
+.hero-body{position:relative;width:100%;padding-block:150px 40px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:48px;align-items:end}
+.hero h1{font-size:clamp(52px,9vw,128px);line-height:.92;letter-spacing:-.045em;color:var(--field)}
+.hero h1 em{font-style:normal;color:var(--sky)}
+.hero .lead{margin-top:28px}
+.ctas{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+.preflight{justify-self:end;width:100%;max-width:320px;background:rgba(11,30,61,.78);border:1px solid var(--navy-line);border-radius:var(--r-md);padding:18px 20px;font:400 12px/1.9 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mist);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.preflight b{font-weight:500;color:var(--field)}
+.preflight .row{display:flex;justify-content:space-between;gap:12px;white-space:nowrap}
+.preflight .ok{color:var(--sky)}
+.preflight .pf-title{display:flex;justify-content:space-between;color:var(--field);border-bottom:1px solid var(--navy-line);padding-bottom:8px;margin-bottom:6px}
+.telemetry{margin-top:44px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid rgba(246,243,238,.25)}
+.telemetry div{padding:14px 12px 0 0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.telemetry span{font:400 11px/1 var(--font-mono);letter-spacing:.12em;color:var(--mist)}
+.telemetry b{font:500 20px/1.1 var(--font-display);color:var(--field);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot-flash{position:absolute;inset:0;background:var(--field);opacity:0;pointer-events:none;z-index:5}
+.shot-flash.go{animation:flash .45s ease-out}
+@keyframes flash{0%{opacity:.75}100%{opacity:0}}
+.hint{font:400 12px/1 var(--font-mono);letter-spacing:.1em;color:var(--mist);margin-top:14px;display:flex;gap:8px;align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}.preflight{justify-self:start}.telemetry{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:14px}.hud-top .hide-s{display:none}}
+@media (max-width:520px){.hud-top{left:30px;right:30px}.c-tl,.c-tr{top:76px}.hero-body{padding-top:130px}}
+
+/* Companion drone */
+#drone{position:fixed;left:0;top:0;width:84px;height:84px;margin:-42px 0 0 -42px;z-index:40;pointer-events:none;will-change:transform;opacity:0;transition:opacity .4s}
+#drone.show{opacity:1}
+#drone .shadow{position:absolute;inset:14px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(8px);transform:translate(16px,22px)}
+#drone svg{position:absolute;inset:0;overflow:visible}
+.prop{transform-box:fill-box;transform-origin:center;animation:spin .12s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (hover:none),(pointer:coarse){#drone{width:64px;height:64px;margin:-32px 0 0 -32px}.hero{cursor:auto}}
+
+/* Altimeter */
+.alti{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:30;display:flex;gap:10px;align-items:stretch;height:300px;pointer-events:none;mix-blend-mode:normal}
+.alti-scale{position:relative;width:12px;border-right:1px solid var(--mist);background:repeating-linear-gradient(180deg,var(--mist) 0 1px,transparent 1px 15px) right/6px 100% no-repeat}
+.alti-mark{position:absolute;right:-5px;width:22px;height:2px;background:var(--signal);transition:top .15s linear}
+.alti-read{position:absolute;right:22px;transform:translateY(-50%);font:500 12px/1 var(--font-mono);letter-spacing:.08em;color:var(--field);background:var(--navy);border:1px solid var(--navy-line);padding:5px 7px;border-radius:3px;white-space:nowrap;transition:top .15s linear}
+.alti-cap{position:absolute;top:-22px;right:0;font:400 10px/1 var(--font-mono);letter-spacing:.1em;color:var(--mist);white-space:nowrap}
+@media (max-width:1100px){.alti{display:none}}
+
+/* Missions (services) */
+.missions{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;align-items:start}
+.mission-tabs{display:flex;flex-direction:column;gap:12px}
+.mtab{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:18px;align-items:center;padding:22px 24px;background:var(--paper);border:1px solid var(--sand-line);border-radius:var(--r-md);transition:border-color .15s,background .15s}
+.mtab:hover{border-color:var(--navy)}
+.mtab:focus-visible{outline:2px solid var(--sky-ink);outline-offset:2px}
+.mtab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:var(--field)}
+.mtab svg{width:52px;height:52px}
+.mtab .stroke{stroke:var(--navy)} .mtab[aria-selected="true"] .stroke{stroke:var(--field)}
+.mtab .dot{fill:var(--signal)}
+.mtab .mt-k{font:500 12px/1 var(--font-mono);letter-spacing:.12em;color:var(--signal-ink);text-transform:uppercase}
+.mtab[aria-selected="true"] .mt-k{color:var(--signal)}
+.mtab .mt-t{display:block;font:500 22px/1.2 var(--font-display);letter-spacing:-.02em;margin-top:6px;color:var(--navy)}
+.mtab[aria-selected="true"] .mt-t{color:var(--field)}
+.mtab .mt-arrow{font:500 20px/1 var(--font-mono);color:var(--slate)}
+.mtab[aria-selected="true"] .mt-arrow{color:var(--signal)}
+.viewport{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--navy);aspect-ratio:4/3;color:var(--field)}
+.viewport img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s,transform 6s linear}
+.viewport img.on{opacity:1;transform:scale(1.08)}
+.viewport img:not(.on){opacity:0;transform:scale(1)}
+.viewport::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,30,61,.65) 0%,rgba(11,30,61,0) 24%,rgba(11,30,61,.45) 46%,rgba(11,30,61,.95) 78%);pointer-events:none}
+.vp-ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:22px 24px}
+.vp-top{display:flex;justify-content:space-between;font:400 12px/1 var(--font-mono);letter-spacing:.1em;gap:12px}
+.vp-bottom h3{font-size:clamp(26px,3vw,36px);letter-spacing:-.02em;line-height:1.08;color:var(--field)}
+.vp-bottom ul{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:8px;font-size:16px;color:var(--haze)}
+.vp-bottom li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px}
+.vp-bottom li::before{content:"";width:6px;height:6px;margin-top:10px;border-radius:50%;background:var(--signal)}
+.vp-sweep{position:absolute;left:0;right:0;height:2px;background:var(--sky);box-shadow:0 0 12px var(--sky);top:0;opacity:0;z-index:1}
+.vp-sweep.go{animation:sweep 1.1s ease-in-out}
+@keyframes sweep{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
+@media (max-width:900px){.missions{grid-template-columns:1fr}.viewport{aspect-ratio:4/5}}
+@media (max-width:520px){#vpCoord{display:none}.mtab{grid-template-columns:44px minmax(0,1fr);padding:18px}.mtab svg{width:44px;height:44px}.mtab .mt-arrow{display:none}}
+
+/* Survey */
+.survey{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:40px;align-items:start}
+.survey-stage{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--navy-line);background:var(--navy-700)}
+#surveyCanvas{display:block;width:100%;height:auto;aspect-ratio:16/9;touch-action:manipulation}
+.survey-panel{display:flex;flex-direction:column;gap:22px}
+.readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+.ro{border-top:2px solid var(--field);padding-top:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ro b{font:500 clamp(28px,3vw,40px)/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ro b small{font-size:.45em;color:var(--mist);margin-left:4px;letter-spacing:0}
+.ro span{font:400 12px/1.3 var(--font-mono);letter-spacing:.1em;color:var(--mist);text-transform:uppercase}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:10px;color:var(--haze);font-size:16px}
+.check li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px}
+.check li::before{content:"";width:10px;height:10px;margin-top:8px;border:2px solid var(--sky);border-radius:50%}
+.stage-bar{position:absolute;left:16px;right:16px;bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+.stage-bar > *{pointer-events:auto}
+@media (max-width:900px){.survey{grid-template-columns:1fr}}
+
+/* Inspection */
+.inspect{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:start}
+.roof{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--navy);aspect-ratio:4/3;position:sticky;top:96px;cursor:none;user-select:none;-webkit-user-select:none;touch-action:none}
+.roof img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:filter .4s}
+.roof.thermal img{filter:url(#thermal) contrast(1.15)}
+.loupe{position:absolute;width:180px;height:180px;margin:-90px 0 0 -90px;border-radius:50%;border:2px solid var(--field);box-shadow:0 0 0 4px rgba(11,30,61,.5);background-repeat:no-repeat;pointer-events:none;opacity:0;transition:opacity .2s;z-index:3}
+.roof:hover .loupe,.roof.touching .loupe{opacity:1}
+.loupe::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:var(--signal)}
+.roof.thermal .loupe{filter:url(#thermal) contrast(1.15)}
+.pin{position:absolute;z-index:2;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;border:2px solid var(--field);background:rgba(11,30,61,.6);display:grid;place-items:center;font:500 11px/1 var(--font-mono);color:var(--field);cursor:pointer;padding:0}
+.pin::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid currentColor;opacity:.6;animation:ping 2s ease-out infinite}
+@keyframes ping{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.4);opacity:0}}
+.pin.high{background:var(--signal);color:var(--navy);border-color:var(--navy)}
+.pin.med{background:var(--sky);color:var(--navy);border-color:var(--navy)}
+.roof-bar{position:absolute;left:14px;top:14px;right:14px;z-index:4;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;pointer-events:none}
+.roof-bar > *{pointer-events:auto}
+.seg{display:inline-flex;background:var(--navy);border:1px solid var(--navy-line);border-radius:var(--r-sm);padding:3px}
+.seg button{all:unset;cursor:pointer;font:500 12px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mist);padding:8px 12px;border-radius:3px}
+.seg button[aria-pressed="true"]{background:var(--signal);color:var(--navy)}
+.seg button:focus-visible{outline:2px solid var(--sky);outline-offset:1px}
+.defects{display:grid;gap:10px;margin-top:22px}
+.defect{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--sand-line);border-radius:var(--r-md);background:var(--paper)}
+.defect:hover,.defect.on{border-color:var(--navy)}
+.defect:focus-visible{outline:2px solid var(--sky-ink);outline-offset:2px}
+.defect .sev{font:500 11px/1 var(--font-mono);letter-spacing:.1em;padding:6px 8px;border-radius:3px;text-transform:uppercase;justify-self:start;align-self:start;margin-top:3px}
+.sev.high{background:var(--signal);color:var(--navy)}
+.sev.med{background:var(--sky);color:var(--navy)}
+.sev.low{background:var(--field);color:var(--slate);border:1px solid var(--sand-line)}
+.defect b{font:500 17px/1.3 var(--font-display);color:var(--navy)}
+.defect span.d{display:block;font-size:14px;color:var(--slate);line-height:1.45}
+.defect .grid-ref{display:block;margin-top:6px;font:400 12px/1 var(--font-mono);color:var(--slate);letter-spacing:.06em}
+@media (max-width:980px){.inspect{grid-template-columns:1fr}.roof{position:relative;top:0}}
+
+/* Academy + simulator */
+.academy{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:48px;align-items:start}
+.path{display:grid;gap:0;margin-top:30px}
+.step{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;padding:18px 0;border-top:1px solid var(--navy-line)}
+.step:last-child{border-bottom:1px solid var(--navy-line)}
+.step .k{font:500 12px/1.5 var(--font-mono);letter-spacing:.12em;color:var(--signal)}
+.step b{display:block;font:500 21px/1.25 var(--font-display);letter-spacing:-.01em}
+.step span{color:var(--haze);font-size:16px}
+.sim{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--navy-line);background:var(--navy-700)}
+#simCanvas{display:block;width:100%;aspect-ratio:4/3;touch-action:none}
+.sim-hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;gap:10px;padding:14px 16px;font:500 12px/1 var(--font-mono);letter-spacing:.1em;pointer-events:none}
+.sim-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;background:rgba(11,30,61,.62)}
+.sim-over h3{font-size:clamp(28px,3.4vw,40px);letter-spacing:-.02em}
+.sim-over p{color:var(--haze);max-width:40ch;font-size:16px}
+.keys{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font:500 12px/1 var(--font-mono);color:var(--mist);letter-spacing:.08em}
+.keys kbd{font:inherit;border:1px solid var(--mist);border-radius:3px;padding:5px 7px;color:var(--field)}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
+.duo figure{margin:0;position:relative;border-radius:var(--r-md);overflow:hidden;aspect-ratio:4/3}
+.duo img{width:100%;height:100%;object-fit:cover}
+.duo figcaption{position:absolute;left:10px;bottom:10px;font:500 11px/1 var(--font-mono);letter-spacing:.1em;background:var(--navy);padding:6px 8px;border-radius:3px;text-transform:uppercase}
+@media (max-width:980px){.academy{grid-template-columns:1fr}}
+
+/* Safety */
+.creds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.cred{background:var(--paper);border:1px solid var(--sand-line);border-radius:var(--r-md);padding:24px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.cred .seal{width:56px;height:56px}
+.cred .seal .ring{stroke:var(--navy)} .cred .seal .dot{fill:var(--signal)}
+.cred b{font:500 19px/1.25 var(--font-display);color:var(--navy);letter-spacing:-.01em}
+.cred .mono{font-size:12px;color:var(--slate);margin-top:auto}
+@media (max-width:1100px){.creds{grid-template-columns:repeat(6,minmax(0,1fr))}.cred{grid-column:span 2}.cred:nth-child(n+4){grid-column:span 3}}
+@media (max-width:640px){.creds{grid-template-columns:repeat(2,minmax(0,1fr))}.cred,.cred:nth-child(n+4){grid-column:auto}.cred:last-child{grid-column:1/-1}}
+@media (max-width:400px){.creds{grid-template-columns:1fr}}
+
+/* Gallery */
+.gallery{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;scrollbar-color:var(--navy-line) transparent}
+.gallery figure{flex:0 0 min(78vw,520px);margin:0;scroll-snap-align:start;position:relative;border-radius:var(--r-md);overflow:hidden;aspect-ratio:3/2;background:var(--navy-700)}
+.gallery img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.gallery figure:hover img{transform:scale(1.05)}
+.gallery figcaption{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;background:linear-gradient(180deg,transparent,rgba(11,30,61,.9));display:flex;justify-content:space-between;gap:10px;font:400 11px/1.4 var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.gallery figcaption b{font-weight:500}
+.gallery .g-corner{position:absolute;width:16px;height:16px;border:0 solid var(--field)}
+.g-tl{top:10px;left:10px;border-top-width:2px!important;border-left-width:2px!important}
+.g-tr{top:10px;right:10px;border-top-width:2px!important;border-right-width:2px!important}
+
+/* Contact */
+.contact{position:relative;overflow:hidden;isolation:isolate}
+.contact::before{content:"";position:absolute;inset:0;z-index:-2;background:url(img/coast-aerial.jpg) center/cover}
+.contact::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(11,30,61,.96) 0%,rgba(11,30,61,.88) 50%,rgba(11,30,61,.7) 100%)}
+.contact-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+.contact h2{font-size:clamp(56px,9vw,120px);line-height:.92;letter-spacing:-.045em}
+.contact h2 + p{font:400 clamp(22px,2.4vw,30px)/1.3 var(--font-display);color:var(--sky);margin-top:20px}
+.form{background:rgba(18,43,82,.92);border:1px solid var(--navy-line);border-radius:var(--r-md);padding:28px;display:grid;gap:16px}
+.field{display:grid;gap:6px}
+.field label{font:500 12px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+.field input,.field select,.field textarea{font:400 16px/1.4 var(--font-sans);color:var(--field);background:var(--navy);border:1px solid var(--navy-line);border-radius:var(--r-sm);padding:12px 14px;width:100%}
+.field textarea{min-height:96px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--sky);outline-offset:1px;border-color:var(--sky)}
+.field .err{font-size:13px;color:var(--signal);min-height:0}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.done{display:flex;flex-direction:column;gap:12px}
+.done b{font:500 26px/1.15 var(--font-display)}
+.contact-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:40px}
+.contact-list div{border-top:1px solid var(--navy-line);padding-top:12px;display:grid;gap:4px;min-width:0}
+.contact-list span{font:400 12px/1 var(--font-mono);letter-spacing:.1em;color:var(--mist)}
+.contact-list b{font:500 18px/1.3 var(--font-sans);overflow-wrap:anywhere}
+@media (max-width:900px){.contact-grid{grid-template-columns:1fr}}
+@media (max-width:480px){.two,.contact-list{grid-template-columns:1fr}}
+
+footer{border-top:1px solid var(--navy-line);padding-block:36px calc(36px + env(safe-area-inset-bottom,0px));font-size:14px;color:var(--mist)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px}
+footer p{max-width:70ch}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  #drone{display:none}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="thermal" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 1 0"/>
+    <feComponentTransfer>
+      <feFuncR type="table" tableValues="0.04 0.15 0.55 1 1"/>
+      <feFuncG type="table" tableValues="0.12 0.1 0.2 0.55 0.95"/>
+      <feFuncB type="table" tableValues="0.24 0.55 0.45 0.1 0.6"/>
+    </feComponentTransfer>
+  </filter>
+</svg>
+
+<!-- Companion drone (follows the pointer on desktop) -->
+<div id="drone" aria-hidden="true">
+  <div class="shadow"></div>
+  <svg viewBox="-42 -42 84 84">
+    <g id="droneBody">
+      <g stroke="#0B1E3D" stroke-width="5" stroke-linecap="round"><line x1="-24" y1="-24" x2="24" y2="24"/><line x1="24" y1="-24" x2="-24" y2="24"/></g>
+      <g fill="#122B52" stroke="#F6F3EE" stroke-width="1.5">
+        <circle cx="-24" cy="-24" r="13" fill-opacity=".55"/><circle cx="24" cy="-24" r="13" fill-opacity=".55"/><circle cx="-24" cy="24" r="13" fill-opacity=".55"/><circle cx="24" cy="24" r="13" fill-opacity=".55"/>
+      </g>
+      <g fill="#F6F3EE"><rect class="prop" x="-36" y="-25.5" width="24" height="3" rx="1.5"/><rect class="prop" x="12" y="-25.5" width="24" height="3" rx="1.5"/><rect class="prop" x="-36" y="22.5" width="24" height="3" rx="1.5"/><rect class="prop" x="12" y="22.5" width="24" height="3" rx="1.5"/></g>
+      <rect x="-11" y="-14" width="22" height="28" rx="6" fill="#0B1E3D" stroke="#3FA9F5" stroke-width="2"/>
+      <circle cx="0" cy="-8" r="3.5" fill="#FF6B1A"/>
+    </g>
+  </svg>
+</div>
+
+<nav class="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="beacon" href="#top" aria-label="Ally Drones home">
+      <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="6"/><circle class="dot" cx="32" cy="32" r="10"/></svg>
+      Ally Drones
+    </a>
+    <div class="nav-links">
+      <a href="#services">Services</a><a href="#mapping">Mapping</a><a href="#inspection">Inspection</a><a href="#academy">Academy</a><a href="#safety">Safety</a>
+    </div>
+    <a class="btn btn-primary" href="#contact"><span class="dot"></span><span>Request<span class="long"> a flight</span></span></a>
+  </div>
+</nav>
+
+<!-- Altimeter -->
+<div class="alti" aria-hidden="true">
+  <div class="alti-scale"><span class="alti-cap">MAX 120 M · GCAA</span><span class="alti-mark" id="altiMark"></span><span class="alti-read" id="altiRead">ALT 000 M</span></div>
+</div>
+
+<main id="top">
+<!-- HERO -->
+<header class="hero" id="hero">
+  <div class="hero-img" id="heroImg" role="img" aria-label="Aerial view over Accra neighbourhoods at golden hour"></div>
+  <div class="scan"></div>
+  <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+  <div class="hud-top" aria-hidden="true">
+    <span class="rec">REC · <span id="shots">SHOTS 000</span></span>
+    <span class="hide-s">MODE · P-GPS</span>
+    <span id="clock">ACCRA 00:00:00 GMT</span>
+  </div>
+  <div class="shot-flash" id="flash"></div>
+  <div class="hero-body">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Accra, Ghana · Drone training &amp; aerial services</span>
+          <h1 style="margin-top:20px">Your eyes<br>in the <em>sky.</em></h1>
+          <p class="lead">Ally Drones gives Accra's builders, land buyers and building owners a clear view from above. We also train the pilots who capture it.</p>
+          <div class="ctas">
+            <a class="btn btn-primary" href="#contact"><span class="dot"></span>Request a site flight</a>
+            <a class="btn btn-secondary" href="#academy">Learn to fly</a>
+          </div>
+          <p class="hint" id="heroHint" aria-hidden="true">◎ Move to steer · click the frame to take a shot</p>
+        </div>
+        <aside class="preflight" aria-label="Pre-flight checklist">
+          <div class="pf-title"><b>Pre-flight check</b><span id="pfCount">0/5</span></div>
+          <div class="row"><span>GCAA ROC</span><span class="pf" data-v="PENDING">…</span></div>
+          <div class="row"><span>Pilot licence (RPL)</span><span class="pf" data-v="PENDING">…</span></div>
+          <div class="row"><span>Third-party insurance</span><span class="pf" data-v="PENDING">…</span></div>
+          <div class="row"><span>Airspace &amp; weather</span><span class="pf" data-v="CLEAR">…</span></div>
+          <div class="row"><span>Flight log</span><span class="pf" data-v="OPEN">…</span></div>
+        </aside>
+      </div>
+      <div class="telemetry" aria-label="Live flight telemetry (illustrative)">
+        <div><span>ALT</span><b id="tAlt">120 M</b></div>
+        <div><span>SPD</span><b id="tSpd">0.0 M/S</b></div>
+        <div><span>HDG</span><b id="tHdg">045°</b></div>
+        <div><span>LAT</span><b id="tLat">5.6037° N</b></div>
+        <div><span>LON</span><b id="tLon">0.1870° W</b></div>
+        <div><span>BAT</span><b id="tBat">92%</b></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SERVICES / MISSIONS -->
+<section class="ground" id="services">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">What we do · three services</span>
+      <h2 class="h2">One trusted operator. Three ways to see more.</h2>
+      <p class="lead">Pilot training, aerial mapping and building inspection, all with certified pilots, insured flights and a documented safety system. Pick a service to see it from above.</p>
+    </div>
+    <div class="missions">
+      <div class="mission-tabs" role="tablist" aria-label="Services">
+        <button class="mtab" role="tab" id="tab-academy" aria-controls="vp" aria-selected="true" data-m="academy">
+          <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><circle class="stroke" cx="32" cy="32" r="22"/><circle class="dot" cx="32" cy="32" r="6"/></svg>
+          <span><span class="mt-k">Service 01</span><span class="mt-t">Drone Pilot Academy</span></span><span class="mt-arrow">→</span>
+        </button>
+        <button class="mtab" role="tab" id="tab-mapping" aria-controls="vp" aria-selected="false" data-m="mapping">
+          <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><rect class="stroke" x="10" y="10" width="44" height="44"/><line class="stroke" x1="10" y1="25" x2="54" y2="25"/><line class="stroke" x1="10" y1="39" x2="54" y2="39"/><line class="stroke" x1="25" y1="10" x2="25" y2="54"/><line class="stroke" x1="39" y1="10" x2="39" y2="54"/><circle class="dot" cx="39" cy="25" r="4"/></svg>
+          <span><span class="mt-k">Service 02</span><span class="mt-t">Aerial Mapping &amp; Progress Reporting</span></span><span class="mt-arrow">→</span>
+        </button>
+        <button class="mtab" role="tab" id="tab-inspection" aria-controls="vp" aria-selected="false" data-m="inspection">
+          <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><polyline class="stroke" points="8,30 32,10 56,30"/><rect class="stroke" x="14" y="30" width="36" height="24"/><circle class="dot" cx="32" cy="22" r="4"/></svg>
+          <span><span class="mt-k">Service 03</span><span class="mt-t">Roof &amp; Building Inspection</span></span><span class="mt-arrow">→</span>
+        </button>
+      </div>
+      <div class="viewport" id="vp" role="tabpanel" aria-live="polite">
+        <img class="on" data-m="academy" src="img/pilot-controller.jpg" alt="A pilot's hands on a drone controller with the live camera feed">
+        <img data-m="mapping" src="img/accra-interchange.jpg" alt="Aerial view of a motorway interchange in Accra" loading="lazy">
+        <img data-m="inspection" src="img/roofs-aerial-2.jpg" alt="Aerial view over residential rooftops in Ghana" loading="lazy">
+        <span class="vp-sweep" id="sweep"></span>
+        <div class="vp-ui">
+          <div class="vp-top mono"><span class="rec" id="vpMode">Mission · Academy</span><span id="vpCoord">05.6037° N · 0.1870° W</span></div>
+          <div class="vp-bottom">
+            <h3 id="vpTitle">Learn to fly, properly.</h3>
+            <ul id="vpList"></ul>
+            <div style="margin-top:20px"><a class="btn btn-primary" id="vpCta" href="#academy">Explore the Academy</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAPPING -->
+<section id="mapping">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Service 02 · Aerial mapping &amp; progress</span>
+      <h2 class="h2">See your project the way your investors want to.</h2>
+      <p class="lead">We fly a planned grid, capture hundreds of overlapping photos, and stitch them into a measured map with a date on it. Run a sample survey to watch how it works.</p>
+    </div>
+    <div class="survey">
+      <div class="survey-stage">
+        <canvas id="surveyCanvas" width="1280" height="720" aria-label="Sample survey animation over an Accra interchange"></canvas>
+        <div class="stage-bar">
+          <span class="tag tag-outline" style="background:var(--navy)">Demo survey · illustrative figures</span>
+          <button class="btn btn-primary" id="runSurvey" type="button"><span class="dot"></span>Run survey</button>
+        </div>
+      </div>
+      <div class="survey-panel">
+        <div class="readouts">
+          <div class="ro"><b id="rArea">0.0<small>ha</small></b><span>Area covered</span></div>
+          <div class="ro"><b id="rPhotos">0</b><span>Photos captured</span></div>
+          <div class="ro"><b id="rOverlap">75<small>%</small></b><span>Front overlap</span></div>
+          <div class="ro"><b id="rGsd">2.0<small>cm/px</small></b><span>Ground sample</span></div>
+        </div>
+        <ul class="check">
+          <li>Orthomosaics, 3D models and measured volumes</li>
+          <li>Monthly progress visits with before and after comparisons</li>
+          <li>Land-plot reports for diaspora buyers, made with a licensed surveyor for boundary accuracy</li>
+        </ul>
+        <div><a class="btn btn-secondary" href="#contact">Book a site survey</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSPECTION -->
+<section class="ground" id="inspection">
+  <div class="wrap">
+    <div class="inspect">
+      <div>
+        <div class="sec-head" style="margin-bottom:0">
+          <span class="eyebrow">Service 03 · Roof &amp; building inspection</span>
+          <h2 class="h2">No one has to climb your roof.</h2>
+          <p class="lead">Full roof and façade imagery, defect mapping with severity ratings, and an optional thermal pass for moisture. The reports are ready for insurance, maintenance budgets or a sale.</p>
+        </div>
+        <div class="defects" id="defects"></div>
+        <p class="mono" style="font-size:12px;color:var(--slate);margin-top:16px">Example markers on a sample photo. The thermal view is simulated.</p>
+      </div>
+      <div class="roof" id="roof" aria-label="Roof survey image. Hover or drag to inspect with the loupe.">
+        <img src="img/roofs-aerial-1.jpg" alt="Aerial view of dense residential rooftops in Ghana" id="roofImg">
+        <div class="loupe" id="loupe"></div>
+        <div class="roof-bar">
+          <span class="tag" style="background:var(--navy);border-color:var(--navy-line);color:var(--field)">Loupe 2.5× · Hover or drag</span>
+          <div class="seg" role="group" aria-label="Camera">
+            <button type="button" aria-pressed="true" data-cam="rgb">Visual</button>
+            <button type="button" aria-pressed="false" data-cam="thermal">Thermal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACADEMY -->
+<section id="academy">
+  <div class="wrap">
+    <div class="academy">
+      <div>
+        <div class="sec-head" style="margin-bottom:0">
+          <span class="eyebrow">Service 01 · Drone Pilot Academy · Fly with Ally</span>
+          <h2 class="h2">From first flight to FPV racing.</h2>
+          <p class="lead">Ghana's hands-on drone academy. Three days, one certificate, and a new way to see the world. Anyone can learn to fly.</p>
+        </div>
+        <div class="path">
+          <div class="step"><span class="k">Day 1</span><div><b>Ground school</b><span>Airspace, GCAA rules, pre-flight checks and safety.</span></div></div>
+          <div class="step"><span class="k">Day 2</span><div><b>Handling</b><span>Simulator hours, then real field time with an instructor.</span></div></div>
+          <div class="step"><span class="k">Day 3</span><div><b>Applied missions</b><span>Plan and fly a real mapping or inspection job.</span></div></div>
+          <div class="step"><span class="k">Add-on</span><div><b>FPV &amp; racing track</b><span>Indoor "tiny whoop" sessions, then outdoor FPV for schools and clubs.</span></div></div>
+        </div>
+        <div class="ctas"><a class="btn btn-primary" href="#contact"><span class="dot"></span>Book the next cohort</a><a class="btn btn-secondary" href="#contact">Bring this to your school</a></div>
+      </div>
+      <div>
+        <div class="sim" id="sim">
+          <canvas id="simCanvas" width="960" height="720" aria-label="Ring-run flight simulator"></canvas>
+          <div class="sim-hud" aria-live="polite"><span id="simRings">RINGS 0/8</span><span id="simTime">T 30.0 S</span></div>
+          <div class="sim-over" id="simOver">
+            <span class="eyebrow">Academy simulator · Ring run</span>
+            <h3 id="simTitle">Fly through eight rings in 30 seconds.</h3>
+            <p id="simMsg">Steer with the arrow keys or WASD, or drag on the screen. Fly through the lit ring to light the next one.</p>
+            <div class="keys" aria-hidden="true"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> · drag on touch</div>
+            <button class="btn btn-primary" id="simStart" type="button"><span class="dot"></span>Start flight</button>
+            <span class="mono" style="font-size:12px;color:var(--mist)" id="simBest"></span>
+          </div>
+        </div>
+        <div class="duo">
+          <figure><img src="img/fpv-drone.jpg" alt="Red FPV racing quadcopter" loading="lazy"><figcaption>FPV &amp; racing track</figcaption></figure>
+          <figure><img src="img/drone-over-sea.jpg" alt="A drone hovering over the sea" loading="lazy"><figcaption>Field sessions</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="ground" id="safety">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Safety, licensing &amp; compliance</span>
+      <h2 class="h2">Built to fly by the rules.</h2>
+      <p class="lead">We're completing our Ghana Civil Aviation Authority registration and operator certification. Every flight will be registered, insured and logged, with no shortcuts.</p>
+    </div>
+    <div class="creds">
+      <div class="cred"><svg class="seal" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="4"/><circle class="dot" cx="32" cy="32" r="9"/></svg><b>GCAA RPAS Operator Certificate</b><span class="mono">ROC [no.]</span></div>
+      <div class="cred"><svg class="seal" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="4"/><circle class="dot" cx="32" cy="32" r="9"/></svg><b>Every pilot individually licensed</b><span class="mono">RPL × [—]</span></div>
+      <div class="cred"><svg class="seal" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="4"/><circle class="dot" cx="32" cy="32" r="9"/></svg><b>Full third-party insurance</b><span class="mono">Policy [no.]</span></div>
+      <div class="cred"><svg class="seal" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="4"/><circle class="dot" cx="32" cy="32" r="9"/></svg><b>Safety management system &amp; emergency plan</b><span class="mono">Documented</span></div>
+      <div class="cred"><svg class="seal" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="4"/><circle class="dot" cx="32" cy="32" r="9"/></svg><b>Zero-incident flight record</b><span class="mono">[—] flights logged</span></div>
+    </div>
+    <p style="margin-top:20px"><span class="tag tag-outline">Licence and policy numbers to confirm</span></p>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" style="padding-bottom:clamp(56px,8vw,96px)">
+  <div class="wrap">
+    <div class="sec-head" style="margin-bottom:32px">
+      <span class="eyebrow">From 120 metres</span>
+      <h2 class="h2">Ghana from above.</h2>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="gallery" tabindex="0" aria-label="Aerial photo gallery, scroll sideways">
+      <figure><img src="img/hero-accra-aerial.jpg" alt="Accra neighbourhoods from above" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Accra · residential</b><span>Virgyl Sowah</span></figcaption></figure>
+      <figure><img src="img/accra-interchange.jpg" alt="Motorway interchange in Accra" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Accra · interchange</b><span>Tobias Nii Kwatei Quartey</span></figcaption></figure>
+      <figure><img src="img/accra-beach-aerial.jpg" alt="Independence Square, Accra" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Independence Square</b><span>Nana Kwandoh</span></figcaption></figure>
+      <figure><img src="img/roundabout-aerial.jpg" alt="A roundabout seen from directly above at dusk" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Nadir · roundabout</b><span>nathaniel abadji</span></figcaption></figure>
+      <figure><img src="img/coast-aerial.jpg" alt="Ghana coastline and town from above" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Ghana coast</b><span>The Artboard</span></figcaption></figure>
+      <figure><img src="img/roofs-aerial-2.jpg" alt="Homes and roads from above" loading="lazy"><span class="g-corner g-tl"></span><span class="g-corner g-tr"></span><figcaption><b>Rooftops</b><span>The Artboard</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div>
+        <span class="eyebrow">Contact</span>
+        <h2 style="margin-top:18px">Let's fly.</h2>
+        <p>Trained pilots. Trusted eyes. Ghana's skies.</p>
+        <div class="contact-list">
+          <div><span>EMAIL</span><b>[hello@allydrones…]</b></div>
+          <div><span>PHONE</span><b>[+233 …]</b></div>
+          <div><span>BASE</span><b>Accra, Ghana</b></div>
+          <div><span>SOCIAL</span><b>[@allydrones]</b></div>
+        </div>
+      </div>
+      <form class="form" id="flightForm" novalidate>
+        <div id="formBody" style="display:grid;gap:16px">
+          <span class="eyebrow">Flight request</span>
+          <div class="two">
+            <div class="field"><label for="fName">Your name</label><input id="fName" name="name" autocomplete="name" required><span class="err" id="eName"></span></div>
+            <div class="field"><label for="fContact">Email or phone</label><input id="fContact" name="contact" autocomplete="email" required><span class="err" id="eContact"></span></div>
+          </div>
+          <div class="two">
+            <div class="field"><label for="fService">Service</label>
+              <select id="fService" name="service"><option>Aerial mapping &amp; progress</option><option>Land-plot report</option><option>Roof &amp; building inspection</option><option>Academy course</option><option>Corporate or school training</option></select></div>
+            <div class="field"><label for="fSite">Site location</label><input id="fSite" name="site" placeholder="e.g. East Legon, Tema, Kasoa"></div>
+          </div>
+          <div class="field"><label for="fMsg">What do you need to see?</label><textarea id="fMsg" name="msg" placeholder="Site size, timeline, what decisions the images will support"></textarea></div>
+          <div><button class="btn btn-primary" type="submit"><span class="dot"></span>Log flight request</button></div>
+        </div>
+        <div class="done" id="formDone" hidden>
+          <span class="eyebrow" id="doneRef">Request logged</span>
+          <b>Thanks. Your request is ready.</b>
+          <p style="color:var(--haze)">This page isn't connected to email yet, so nothing has been sent. Copy the summary below and send it to the Ally Drones email address on this page.</p>
+          <pre id="doneSummary" style="white-space:pre-wrap;font:400 13px/1.6 var(--font-mono);background:var(--navy);border:1px solid var(--navy-line);border-radius:4px;padding:14px;margin:0;color:var(--field)"></pre>
+          <div class="ctas" style="margin-top:4px"><button class="btn btn-primary" type="button" id="copySummary">Copy summary</button><button class="btn btn-secondary" type="button" id="newReq">New request</button></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="beacon" href="#top" style="font-size:18px"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring" cx="32" cy="32" r="26" stroke-width="6"/><circle class="dot" cx="32" cy="32" r="10"/></svg>Ally Drones</a>
+    <p>Ally Drone Technologies Limited · Accra, Ghana. Photos from Unsplash: Virgyl Sowah, Tobias Nii Kwatei Quartey, Nana Kwandoh, The Artboard, nathaniel abadji, Omar, Felix Berger and Stephan Louis. Real Ally Drones job imagery will replace them. Bracketed figures are still to be confirmed.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var finePointer = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  function $(id){return document.getElementById(id);}
+  function pad(n,l){n=String(n);while(n.length<l)n='0'+n;return n;}
+
+  /* ---------- Clock ---------- */
+  function tick(){var d=new Date();$('clock').textContent='ACCRA '+pad(d.getUTCHours(),2)+':'+pad(d.getUTCMinutes(),2)+':'+pad(d.getUTCSeconds(),2)+' GMT';}
+  tick(); setInterval(tick,1000);
+
+  /* ---------- Pre-flight checklist ---------- */
+  var pfs=[].slice.call(document.querySelectorAll('.pf')),pfi=0;
+  function pfStep(){ if(pfi>=pfs.length)return; var el=pfs[pfi]; var v=el.getAttribute('data-v'); el.textContent=(v==="PENDING"?'◌ ':'✓ ')+v; el.classList.add('ok'); pfi++; $('pfCount').textContent=pfi+'/5'; if(pfi<pfs.length) setTimeout(pfStep, reduce?0:420); }
+  setTimeout(pfStep, reduce?0:600);
+
+  /* ---------- Companion drone + hero telemetry ---------- */
+  var drone=$('drone'), body=$('droneBody'), hero=$('hero'), heroImg=$('heroImg');
+  var tx=innerWidth*0.7, ty=innerHeight*0.45, x=tx, y=ty, vx=0, vy=0, lastHdg=45, inHero=true;
+  var LAT0=5.6037, LON0=0.1870;
+  function setTarget(e){ tx=e.clientX; ty=e.clientY; }
+  // Touch screens: the drone rests in a corner dock, flies to every touch
+  // (and to a hovering finger or stylus where the device reports it), then returns.
+  var touchMode=!finePointer, lastTouch=0;
+  function dock(){ tx=innerWidth-48; ty=innerHeight-64; }
+  function touchTo(px,py){ tx=px; ty=py; lastTouch=performance.now(); }
+  if(touchMode) $('heroHint').textContent='◎ Tap anywhere and the drone flies to your finger';
+  if(!reduce){
+    if(finePointer){
+      addEventListener('pointermove', function(e){ setTarget(e); drone.classList.add('show'); }, {passive:true});
+      document.addEventListener('mouseleave', function(){ drone.classList.remove('show'); });
+    } else {
+      dock(); x=tx; y=ty; drone.classList.add('show');
+      addEventListener('pointerdown', function(e){ touchTo(e.clientX,e.clientY); }, {passive:true});
+      addEventListener('pointermove', function(e){ if(e.pointerType!=='mouse') touchTo(e.clientX,e.clientY); }, {passive:true});
+      addEventListener('touchmove', function(e){ var t=e.touches[0]; if(t) touchTo(t.clientX,t.clientY); }, {passive:true});
+      addEventListener('resize', function(){ if(performance.now()-lastTouch>2500) dock(); });
+    }
+  }
+  hero.addEventListener('pointermove', function(e){
+    var r=hero.getBoundingClientRect(), nx=(e.clientX-r.left)/r.width-.5, ny=(e.clientY-r.top)/r.height-.5;
+    if(!reduce) heroImg.style.transform='scale(1.08) translate('+(-nx*30).toFixed(1)+'px,'+(-ny*24).toFixed(1)+'px)';
+    $('tLat').textContent=(LAT0 - ny*0.02).toFixed(4)+'° N';
+    $('tLon').textContent=(LON0 - nx*0.03).toFixed(4)+'° W';
+  });
+  var shots=0;
+  hero.addEventListener('click', function(e){
+    if(e.target.closest('a,button,aside'))return;
+    shots++; $('shots').textContent='SHOTS '+pad(shots,3);
+    var f=$('flash'); f.classList.remove('go'); void f.offsetWidth; if(!reduce) f.classList.add('go');
+  });
+  var bat=92, lastT=performance.now();
+  function loop(t){
+    var dt=Math.min(50,t-lastT)/16.67; lastT=t;
+    if(touchMode && lastTouch && t-lastTouch>2500){ dock(); lastTouch=0; }
+    var ax=(tx-x)*(touchMode?0.02:0.012), ay=(ty-y)*(touchMode?0.02:0.012);
+    vx=(vx+ax*dt)*0.88; vy=(vy+ay*dt)*0.88; x+=vx*dt; y+=vy*dt;
+    var spd=Math.sqrt(vx*vx+vy*vy);
+    var tilt=Math.max(-18,Math.min(18,vx*1.6));
+    if(spd>0.6) lastHdg=(Math.atan2(vx,-vy)*180/Math.PI+360)%360;
+    var bob=spd<0.4?Math.sin(t/420)*3:0;
+    drone.style.transform='translate('+x.toFixed(1)+'px,'+(y+bob).toFixed(1)+'px)';
+    body.setAttribute('transform','rotate('+tilt.toFixed(1)+') scale('+(1-Math.min(.12,Math.abs(vy)*.01)).toFixed(3)+')');
+    var r=hero.getBoundingClientRect();
+    if(r.bottom>0){
+      $('tSpd').textContent=(spd*0.9).toFixed(1)+' M/S';
+      $('tHdg').textContent=pad(Math.round(lastHdg),3)+'°';
+    }
+    requestAnimationFrame(loop);
+  }
+  if(!reduce) requestAnimationFrame(loop);
+  setInterval(function(){ if(bat>61){bat--; $('tBat').textContent=bat+'%';} }, 9000);
+
+  /* ---------- Altimeter + nav highlight ---------- */
+  var mark=$('altiMark'), read=$('altiRead'), links=[].slice.call(document.querySelectorAll('.nav-links a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  function onScroll(){
+    var max=document.documentElement.scrollHeight-innerHeight, p=max>0?scrollY/max:0;
+    var alt=Math.round(p*120), top=(1-p)*100;
+    mark.style.top=top+'%'; read.style.top=top+'%'; read.textContent='ALT '+pad(alt,3)+' M';
+    $('tAlt').textContent=(120 - Math.round(Math.min(1,scrollY/ (hero.offsetHeight||1))*20))+' M';
+    var cur=-1; secs.forEach(function(s,i){ if(s && s.getBoundingClientRect().top<innerHeight*0.4) cur=i; });
+    links.forEach(function(a,i){ a.classList.toggle('on', i===cur); });
+  }
+  addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---------- Missions ---------- */
+  var MISSIONS={
+    academy:{mode:'Mission · Academy',coord:'05.6500° N · 0.1860° W',title:'Learn to fly, properly.',cta:['Explore the Academy','#academy'],
+      list:['3-day and multi-week courses, from beginner to commercial track','Simulator plus real field time','FPV and drone racing add-on for students and schools','Group training for companies']},
+    mapping:{mode:'Mission · Mapping',coord:'05.6180° N · 0.1720° W',title:'Track your build from above.',cta:['See a sample survey','#mapping'],
+      list:['Orthomosaics, 3D models and measured volumes','Dated monthly progress visits, ready for investors','Land-plot reports you can check from anywhere in the world']},
+    inspection:{mode:'Mission · Inspection',coord:'05.5560° N · 0.1960° W',title:'Know your roof without the risk.',cta:['Try the inspection loupe','#inspection'],
+      list:['Full roof and façade imagery','Defects mapped and rated by severity','Optional thermal pass for moisture','Reports for insurance, maintenance or a sale']}
+  };
+  var tabs=[].slice.call(document.querySelectorAll('.mtab')), imgs=[].slice.call(document.querySelectorAll('#vp img'));
+  function setMission(m, focus){
+    var d=MISSIONS[m];
+    tabs.forEach(function(t){ var on=t.getAttribute('data-m')===m; t.setAttribute('aria-selected',on); t.tabIndex=on?0:-1; if(on&&focus)t.focus(); });
+    imgs.forEach(function(i){ i.classList.toggle('on', i.getAttribute('data-m')===m); });
+    $('vpMode').textContent=d.mode; $('vpCoord').textContent=d.coord; $('vpTitle').textContent=d.title;
+    $('vpList').innerHTML=d.list.map(function(s){return '<li>'+s+'</li>';}).join('');
+    $('vpCta').textContent=d.cta[0]; $('vpCta').setAttribute('href',d.cta[1]);
+    var sw=$('sweep'); sw.classList.remove('go'); void sw.offsetWidth; if(!reduce) sw.classList.add('go');
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click', function(){ setMission(t.getAttribute('data-m')); });
+    t.addEventListener('keydown', function(e){
+      var k=e.key, n=null; if(k==='ArrowDown'||k==='ArrowRight') n=(i+1)%tabs.length; if(k==='ArrowUp'||k==='ArrowLeft') n=(i+tabs.length-1)%tabs.length;
+      if(n!==null){ e.preventDefault(); setMission(tabs[n].getAttribute('data-m'), true); }
+    });
+  });
+  setMission('academy');
+
+  /* ---------- Survey canvas ---------- */
+  var sc=$('surveyCanvas'), sx=sc.getContext('2d'), W=sc.width, H=sc.height;
+  var simg=new Image(); simg.src='img/accra-interchange.jpg';
+  var COLS=8, ROWS=5, cw=W/COLS, ch=H/ROWS, done=[], path=[], prog=0, running=false, photos=0;
+  for(var r=0;r<ROWS;r++){ var row=[]; for(var c=0;c<COLS;c++){ row.push(r%2===0?c:COLS-1-c); } row.forEach(function(cc){ path.push([cc,r]); }); }
+  function cover(img){ var ir=img.width/img.height, cr=W/H, sw, sh, ox, oy; if(ir>cr){sh=img.height; sw=sh*cr; ox=(img.width-sw)/2; oy=0;} else {sw=img.width; sh=sw/cr; ox=0; oy=(img.height-sh)/2;} return [ox,oy,sw,sh]; }
+  function drawSurvey(){
+    sx.clearRect(0,0,W,H);
+    if(simg.complete && simg.naturalWidth){
+      var s=cover(simg);
+      sx.drawImage(simg,s[0],s[1],s[2],s[3],0,0,W,H);
+      sx.fillStyle='rgba(11,30,61,0.72)'; sx.fillRect(0,0,W,H);
+      // processed tiles
+      done.forEach(function(k){ var c=k%COLS, r=Math.floor(k/COLS); var kx=s[2]/W, ky=s[3]/H;
+        sx.drawImage(simg, s[0]+c*cw*kx, s[1]+r*ch*ky, cw*kx, ch*ky, c*cw, r*ch, cw, ch); });
+    } else { sx.fillStyle='#122B52'; sx.fillRect(0,0,W,H); }
+    // grid
+    sx.strokeStyle='rgba(246,243,238,0.18)'; sx.lineWidth=1;
+    for(var c=1;c<COLS;c++){ sx.beginPath(); sx.moveTo(c*cw,0); sx.lineTo(c*cw,H); sx.stroke(); }
+    for(var r=1;r<ROWS;r++){ sx.beginPath(); sx.moveTo(0,r*ch); sx.lineTo(W,r*ch); sx.stroke(); }
+    // planned path
+    sx.setLineDash([16,14]); sx.strokeStyle='rgba(63,169,245,0.9)'; sx.lineWidth=4; sx.beginPath();
+    path.forEach(function(p,i){ var px=p[0]*cw+cw/2, py=p[1]*ch+ch/2; if(i===0) sx.moveTo(px,py); else sx.lineTo(px,py); }); sx.stroke(); sx.setLineDash([]);
+    // flown path
+    var fi=Math.floor(prog), ff=prog-fi;
+    if(prog>0){ sx.strokeStyle='#FF6B1A'; sx.lineWidth=6; sx.beginPath();
+      for(var i=0;i<=Math.min(fi,path.length-1);i++){ var p=path[i], px=p[0]*cw+cw/2, py=p[1]*ch+ch/2; if(i===0) sx.moveTo(px,py); else sx.lineTo(px,py); }
+      var pos=dronePos(); sx.lineTo(pos[0],pos[1]); sx.stroke(); }
+    // capture dots
+    sx.fillStyle='#F6F3EE';
+    done.forEach(function(k){ var c=k%COLS, r=Math.floor(k/COLS); sx.beginPath(); sx.arc(c*cw+cw/2, r*ch+ch/2, 7, 0, 6.283); sx.fill(); });
+    // labels
+    sx.font='500 30px "IBM Plex Mono", monospace'; sx.fillStyle='rgba(246,243,238,0.95)';
+    sx.fillText('GRID '+COLS+'×'+ROWS+' · ALT 80 M', 28, 52);
+    sx.textAlign='right'; sx.fillText(running?'CAPTURING…':(done.length===COLS*ROWS?'ORTHOMOSAIC READY':'READY'), W-28, 52); sx.textAlign='left';
+    // drone
+    var d=dronePos(); drawMiniDrone(sx,d[0],d[1],2.4);
+  }
+  function dronePos(){ var fi=Math.min(Math.floor(prog),path.length-1), ff=prog-Math.floor(prog), a=path[fi], b=path[Math.min(fi+1,path.length-1)];
+    var ax=a[0]*cw+cw/2, ay=a[1]*ch+ch/2, bx=b[0]*cw+cw/2, by=b[1]*ch+ch/2; if(prog>=path.length-1) return [bx,by]; return [ax+(bx-ax)*ff, ay+(by-ay)*ff]; }
+  function drawMiniDrone(g,x,y,s){
+    g.save(); g.translate(x,y); g.scale(s,s);
+    g.fillStyle='rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(10,14,22,22,0,0,6.283); g.fill();
+    g.strokeStyle='#0B1E3D'; g.lineWidth=5; g.lineCap='round'; g.beginPath(); g.moveTo(-16,-16); g.lineTo(16,16); g.moveTo(16,-16); g.lineTo(-16,16); g.stroke();
+    g.fillStyle='rgba(246,243,238,0.5)'; g.strokeStyle='#F6F3EE'; g.lineWidth=1.5;
+    [[-16,-16],[16,-16],[-16,16],[16,16]].forEach(function(p){ g.beginPath(); g.arc(p[0],p[1],9,0,6.283); g.fill(); g.stroke(); });
+    g.fillStyle='#0B1E3D'; g.strokeStyle='#3FA9F5'; g.lineWidth=2; g.beginPath(); if(g.roundRect) g.roundRect(-8,-10,16,20,4); else g.rect(-8,-10,16,20); g.fill(); g.stroke();
+    g.fillStyle='#FF6B1A'; g.beginPath(); g.arc(0,-5,2.8,0,6.283); g.fill();
+    g.restore();
+  }
+  function updateReadouts(){
+    var frac=done.length/(COLS*ROWS);
+    $('rArea').innerHTML=(frac*14.2).toFixed(1)+'<small>ha</small>';
+    $('rPhotos').textContent=photos;
+  }
+  var sLast=0;
+  function surveyLoop(t){
+    if(!running) return;
+    var dt=sLast?Math.min(50,t-sLast):16; sLast=t;
+    var before=Math.floor(prog);
+    prog+=dt*0.006;
+    if(Math.floor(prog)>before || done.length===0){ var p=path[Math.min(Math.floor(prog),path.length-1)]; var k=p[1]*COLS+p[0]; if(done.indexOf(k)<0){ done.push(k); } }
+    photos+=Math.round(dt*0.09+Math.random());
+    if(prog>=path.length-1){ prog=path.length-1; var lp=path[path.length-1], lk=lp[1]*COLS+lp[0]; if(done.indexOf(lk)<0) done.push(lk); running=false; $('runSurvey').innerHTML='<span class="dot"></span>Fly again'; }
+    updateReadouts(); drawSurvey();
+    if(running) requestAnimationFrame(surveyLoop);
+  }
+  $('runSurvey').addEventListener('click', function(){
+    done=[]; prog=0; photos=0; sLast=0;
+    if(reduce){ for(var i=0;i<COLS*ROWS;i++) done.push(i); prog=path.length-1; photos=412; updateReadouts(); drawSurvey(); return; }
+    running=true; this.innerHTML='<span class="dot"></span>Surveying…'; requestAnimationFrame(surveyLoop);
+  });
+  simg.onload=drawSurvey; drawSurvey();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(drawSurvey);
+
+  /* ---------- Inspection ---------- */
+  var DEFECTS=[
+    {x:.27,y:.42,sev:'high',t:'Displaced roofing sheets',d:'Lifted sheet edge. Water can get in during the rainy season.',g:'C-3'},
+    {x:.58,y:.30,sev:'med',t:'Rust at the fixings',d:'Corrosion around the screws. Plan a fix within 6 months.',g:'F-2'},
+    {x:.74,y:.66,sev:'med',t:'Ponding on a flat section',d:'Standing water leaves stains. Check the drainage fall.',g:'H-5'},
+    {x:.42,y:.74,sev:'low',t:'Debris in the gutter',d:'Blocked gutter run. Clear it before the next heavy rain.',g:'D-6'}
+  ];
+  var roof=$('roof'), loupe=$('loupe'), roofImg=$('roofImg'), list=$('defects');
+  DEFECTS.forEach(function(df,i){
+    var pin=document.createElement('button'); pin.type='button'; pin.className='pin '+df.sev; pin.style.left=(df.x*100)+'%'; pin.style.top=(df.y*100)+'%'; pin.textContent=i+1; pin.setAttribute('aria-label','Defect '+(i+1)+': '+df.t);
+    roof.appendChild(pin);
+    var item=document.createElement('button'); item.type='button'; item.className='defect';
+    item.innerHTML='<span class="sev '+df.sev+'">'+(df.sev==='med'?'Medium':df.sev==='high'?'High':'Low')+'</span><span><b>'+(i+1)+' · '+df.t+'</b><span class="d">'+df.d+'</span><span class="grid-ref">GRID '+df.g+'</span></span>';
+    list.appendChild(item);
+    function focusD(){ [].forEach.call(list.children,function(c){c.classList.remove('on');}); item.classList.add('on'); showLoupeAt(df.x, df.y, true); }
+    pin.addEventListener('click', focusD); item.addEventListener('click', focusD); item.addEventListener('mouseenter', function(){ showLoupeAt(df.x,df.y,true); });
+  });
+  var Z=2.5;
+  function showLoupeAt(fx,fy,sticky){
+    var r=roof.getBoundingClientRect(); var px=fx*r.width, py=fy*r.height;
+    loupe.style.left=px+'px'; loupe.style.top=py+'px';
+    loupe.style.backgroundImage='url('+roofImg.currentSrc+')';
+    // image is object-fit:cover; compute rendered size
+    var iw=roofImg.naturalWidth||1600, ih=roofImg.naturalHeight||900, s=Math.max(r.width/iw, r.height/ih), rw=iw*s, rh=ih*s, ox=(r.width-rw)/2, oy=(r.height-rh)/2;
+    loupe.style.backgroundSize=(rw*Z)+'px '+(rh*Z)+'px';
+    loupe.style.backgroundPosition=(-( (px-ox)*Z - 90))+'px '+(-((py-oy)*Z - 90))+'px';
+    if(sticky){ roof.classList.add('touching'); clearTimeout(showLoupeAt.t); showLoupeAt.t=setTimeout(function(){ roof.classList.remove('touching'); }, 2200); }
+  }
+  function loupeFromEvent(e){ var r=roof.getBoundingClientRect(); showLoupeAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height,false); }
+  roof.addEventListener('pointermove', loupeFromEvent);
+  roof.addEventListener('pointerdown', function(e){ if(e.target.closest('button'))return; roof.classList.add('touching'); loupeFromEvent(e); });
+  roof.addEventListener('pointerup', function(e){ if(e.pointerType!=='mouse') roof.classList.remove('touching'); });
+  roof.addEventListener('pointercancel', function(){ roof.classList.remove('touching'); });
+  [].forEach.call(document.querySelectorAll('.seg button'), function(b){
+    b.addEventListener('click', function(){ [].forEach.call(document.querySelectorAll('.seg button'),function(o){o.setAttribute('aria-pressed', o===b);}); roof.classList.toggle('thermal', b.getAttribute('data-cam')==='thermal'); });
+  });
+
+  /* ---------- Simulator ---------- */
+  var cv=$('simCanvas'), g=cv.getContext('2d'), SW=cv.width, SH=cv.height;
+  var ground=new Image(); ground.src='img/roundabout-aerial.jpg';
+  var RINGS=[[200,560],[420,420],[700,520],[820,260],[560,160],[300,230],[140,110],[480,330]];
+  var st={x:120,y:640,vx:0,vy:0,ang:0,ring:0,t:30,on:false,keys:{},drag:null,trail:[]};
+  var best=null; try{ best=parseFloat(localStorage.getItem('ally-sim-best'))||null; }catch(e){}
+  function showBest(){ $('simBest').textContent= best? ('Best run on this device · '+best.toFixed(1)+' s') : ''; }
+  showBest();
+  function drawSim(){
+    g.clearRect(0,0,SW,SH);
+    if(ground.complete && ground.naturalWidth){ var ir=ground.width/ground.height, cr=SW/SH, w,h,ox,oy; if(ir>cr){h=ground.height;w=h*cr;ox=(ground.width-w)/2;oy=0;}else{w=ground.width;h=w/cr;ox=0;oy=(ground.height-h)/2;} g.drawImage(ground,ox,oy,w,h,0,0,SW,SH); }
+    g.fillStyle='rgba(11,30,61,0.55)'; g.fillRect(0,0,SW,SH);
+    g.strokeStyle='rgba(246,243,238,0.08)'; g.lineWidth=1; for(var i=60;i<SW;i+=60){g.beginPath();g.moveTo(i,0);g.lineTo(i,SH);g.stroke();} for(i=60;i<SH;i+=60){g.beginPath();g.moveTo(0,i);g.lineTo(SW,i);g.stroke();}
+    // trail
+    g.strokeStyle='rgba(63,169,245,0.6)'; g.lineWidth=3; g.beginPath(); st.trail.forEach(function(p,i){ if(i===0) g.moveTo(p[0],p[1]); else g.lineTo(p[0],p[1]); }); g.stroke();
+    // rings
+    RINGS.forEach(function(r,i){
+      var passed=i<st.ring, next=i===st.ring;
+      g.lineWidth=next?7:4; g.strokeStyle=passed?'rgba(63,169,245,0.5)':next?'#FF6B1A':'rgba(246,243,238,0.35)';
+      g.beginPath(); g.arc(r[0],r[1],34,0,6.283); g.stroke();
+      if(next){ var pulse=(performance.now()%1200)/1200; g.strokeStyle='rgba(255,107,26,'+(1-pulse)*0.7+')'; g.lineWidth=2; g.beginPath(); g.arc(r[0],r[1],34+pulse*26,0,6.283); g.stroke(); }
+      g.fillStyle=passed?'rgba(63,169,245,0.9)':'rgba(246,243,238,0.85)'; g.font='500 16px "IBM Plex Mono", monospace'; g.textAlign='center'; g.fillText(passed?'✓':String(i+1), r[0], r[1]+6);
+    });
+    g.textAlign='left';
+    // drone
+    g.save(); g.translate(st.x,st.y); g.rotate(st.ang); g.translate(-st.x,-st.y); drawMiniDrone(g,st.x,st.y,1.15); g.restore();
+  }
+  var simLast=0;
+  function simLoop(t){
+    if(!st.on){ return; }
+    var dt=simLast?Math.min(40,t-simLast)/1000:0.016; simLast=t;
+    var ax=0, ay=0, A=900;
+    if(st.keys.left) ax-=A; if(st.keys.right) ax+=A; if(st.keys.up) ay-=A; if(st.keys.down) ay+=A;
+    if(st.drag){ ax+=(st.drag[0]-st.x)*9; ay+=(st.drag[1]-st.y)*9; }
+    st.vx=(st.vx+ax*dt)*Math.pow(0.18,dt); st.vy=(st.vy+ay*dt)*Math.pow(0.18,dt);
+    st.x=Math.max(20,Math.min(SW-20,st.x+st.vx*dt)); st.y=Math.max(20,Math.min(SH-20,st.y+st.vy*dt));
+    st.ang=Math.max(-.35,Math.min(.35,st.vx/900));
+    st.trail.push([st.x,st.y]); if(st.trail.length>60) st.trail.shift();
+    var r=RINGS[st.ring]; if(r && Math.hypot(r[0]-st.x,r[1]-st.y)<30){ st.ring++; }
+    st.t-=dt;
+    $('simRings').textContent='RINGS '+st.ring+'/'+RINGS.length; $('simTime').textContent='T '+Math.max(0,st.t).toFixed(1)+' S';
+    if(st.ring>=RINGS.length) return endSim(true);
+    if(st.t<=0) return endSim(false);
+    drawSim(); requestAnimationFrame(simLoop);
+  }
+  function endSim(win){
+    st.on=false; drawSim();
+    var used=30-Math.max(0,st.t);
+    if(win){
+      $('simTitle').textContent='All 8 rings in '+used.toFixed(1)+' seconds.';
+      $('simMsg').textContent= used<15 ? 'That was smooth, precise flying. The FPV track is calling you.' : 'Clean run. Day 2 handling will make it faster.';
+      if(!best || used<best){ best=used; try{ localStorage.setItem('ally-sim-best', String(best)); }catch(e){} }
+    } else {
+      $('simTitle').textContent='Out of time: '+st.ring+' of 8 rings.';
+      $('simMsg').textContent='Ease off the controls between rings. Smooth inputs beat fast ones. That’s lesson one at the Academy.';
+    }
+    showBest(); $('simStart').innerHTML='<span class="dot"></span>Fly again'; $('simOver').hidden=false; $('simStart').focus();
+  }
+  function startSim(){
+    st.x=120; st.y=640; st.vx=st.vy=0; st.ring=0; st.t=30; st.trail=[]; st.on=true; simLast=0; st.keys={};
+    $('simOver').hidden=true; cv.focus && cv.setAttribute('tabindex','0'); cv.focus();
+    requestAnimationFrame(simLoop);
+  }
+  $('simStart').addEventListener('click', startSim);
+  var KEYMAP={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down'};
+  addEventListener('keydown', function(e){ if(!st.on) return; var k=KEYMAP[e.key]; if(k){ st.keys[k]=true; e.preventDefault(); } });
+  addEventListener('keyup', function(e){ var k=KEYMAP[e.key]; if(k) st.keys[k]=false; });
+  function canvasPt(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width*SW,(e.clientY-r.top)/r.height*SH]; }
+  cv.addEventListener('pointerdown', function(e){ if(!st.on) return; st.drag=canvasPt(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', function(e){ if(st.drag) st.drag=canvasPt(e); });
+  cv.addEventListener('pointerup', function(){ st.drag=null; }); cv.addEventListener('pointercancel', function(){ st.drag=null; });
+  ground.onload=drawSim; drawSim();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(drawSim);
+  // idle ring pulse while overlay shows
+  (function idle(){ if(!st.on) drawSim(); if(!reduce) setTimeout(function(){ requestAnimationFrame(idle); }, 60); })();
+
+  /* ---------- Contact form ---------- */
+  var form=$('flightForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var ok=true, n=$('fName'), c=$('fContact');
+    $('eName').textContent=''; $('eContact').textContent='';
+    if(!n.value.trim()){ $('eName').textContent='Add your name so we know who to call back.'; ok=false; }
+    if(!c.value.trim()){ $('eContact').textContent='Add an email or phone number so we can reply.'; ok=false; }
+    if(!ok){ (n.value.trim()?c:n).focus(); return; }
+    var ref='AD-'+pad(Math.floor(Math.random()*9000)+1000,4);
+    $('doneRef').textContent='Request '+ref;
+    $('doneSummary').textContent=['FLIGHT REQUEST '+ref,'Name: '+n.value.trim(),'Contact: '+c.value.trim(),'Service: '+$('fService').value,'Site: '+($('fSite').value.trim()||'—'),'Details: '+($('fMsg').value.trim()||'—')].join('\n');
+    $('formBody').hidden=true; $('formDone').hidden=false;
+  });
+  $('copySummary').addEventListener('click', function(){
+    var txt=$('doneSummary').textContent, btn=this;
+    function sel(){ var r=document.createRange(); r.selectNodeContents($('doneSummary')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent='Selected. Press Ctrl+C or ⌘C'; }
+    try{ navigator.clipboard.writeText(txt).then(function(){ btn.textContent='Copied'; }, sel); }catch(e){ sel(); }
+  });
+  $('newReq').addEventListener('click', function(){ form.reset(); $('formBody').hidden=false; $('formDone').hidden=true; $('copySummary').textContent='Copy summary'; $('fName').focus(); });
+})();
+</script>
