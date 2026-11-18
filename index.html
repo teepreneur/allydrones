@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ally Drones</title>
-<meta name="description" content="Ally Drones: drone pilot training, aerial mapping and building inspection in Accra, Ghana.">
+<meta name="description" content="Ally Drones: drone training and drone building, aerial mapping, FPV cinematography and building inspection in Accra, Ghana.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -225,6 +225,14 @@ section{padding-block:clamp(72px,10vw,120px)}
 .sim-over p{color:var(--haze);max-width:40ch;font-size:16px}
 .keys{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font:500 12px/1 var(--font-mono);color:var(--mist);letter-spacing:.08em}
 .keys kbd{font:inherit;border:1px solid var(--mist);border-radius:3px;padding:5px 7px;color:var(--field)}
+.film{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;margin-top:64px}
+.film figure{margin:0;position:relative;border-radius:var(--r-md);overflow:hidden;aspect-ratio:4/3}
+.film img{width:100%;height:100%;object-fit:cover}
+.film figcaption{position:absolute;left:10px;bottom:10px;font:500 11px/1 var(--font-mono);letter-spacing:.1em;background:var(--navy);color:var(--field);padding:6px 8px;border-radius:3px;text-transform:uppercase}
+.film h3{font-size:clamp(26px,3vw,34px);letter-spacing:-.02em;line-height:1.1;margin:10px 0 12px}
+.film .lead{margin:0 0 18px}
+.film .check{margin-bottom:22px}
+@media (max-width:900px){.film{grid-template-columns:1fr;gap:24px}}
 .duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
 .duo figure{margin:0;position:relative;border-radius:var(--r-md);overflow:hidden;aspect-ratio:4/3}
 .duo img{width:100%;height:100%;object-fit:cover}
@@ -322,7 +330,7 @@ footer p{max-width:70ch}
       Ally Drones
     </a>
     <div class="nav-links">
-      <a href="#services">Services</a><a href="#mapping">Mapping</a><a href="#inspection">Inspection</a><a href="#academy">Academy</a><a href="#safety">Safety</a>
+      <a href="#services">Services</a><a href="#mapping">Mapping &amp; FPV</a><a href="#inspection">Inspection</a><a href="#academy">Academy</a><a href="#safety">Safety</a>
     </div>
     <a class="btn btn-primary" href="#contact"><span class="dot"></span><span>Request<span class="long"> a flight</span></span></a>
   </div>
@@ -351,7 +359,7 @@ footer p{max-width:70ch}
         <div>
           <span class="eyebrow">Accra, Ghana · Drone training &amp; aerial services</span>
           <h1 style="margin-top:20px">Your eyes<br>in the <em>sky.</em></h1>
-          <p class="lead">Ally Drones gives Accra's builders, land buyers and building owners a clear view from above. We also train the pilots who capture it.</p>
+          <p class="lead">Ally Drones gives Accra's builders, land buyers and building owners a clear view from above. We also teach people to fly drones and to build them.</p>
           <div class="ctas">
             <a class="btn btn-primary" href="#contact"><span class="dot"></span>Request a site flight</a>
             <a class="btn btn-secondary" href="#academy">Learn to fly</a>
@@ -385,17 +393,17 @@ footer p{max-width:70ch}
     <div class="sec-head">
       <span class="eyebrow">What we do · three services</span>
       <h2 class="h2">One trusted operator. Three ways to see more.</h2>
-      <p class="lead">Pilot training, aerial mapping and building inspection, all with certified pilots, insured flights and a documented safety system. Pick a service to see it from above.</p>
+      <p class="lead">Drone training and building, aerial mapping and FPV film, and building inspection, all run to GCAA rules with a documented safety system. Pick a service to see it from above.</p>
     </div>
     <div class="missions">
       <div class="mission-tabs" role="tablist" aria-label="Services">
         <button class="mtab" role="tab" id="tab-academy" aria-controls="vp" aria-selected="true" data-m="academy">
           <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><circle class="stroke" cx="32" cy="32" r="22"/><circle class="dot" cx="32" cy="32" r="6"/></svg>
-          <span><span class="mt-k">Service 01</span><span class="mt-t">Drone Pilot Academy</span></span><span class="mt-arrow">→</span>
+          <span><span class="mt-k">Service 01</span><span class="mt-t">Drone Academy</span></span><span class="mt-arrow">→</span>
         </button>
         <button class="mtab" role="tab" id="tab-mapping" aria-controls="vp" aria-selected="false" data-m="mapping">
           <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><rect class="stroke" x="10" y="10" width="44" height="44"/><line class="stroke" x1="10" y1="25" x2="54" y2="25"/><line class="stroke" x1="10" y1="39" x2="54" y2="39"/><line class="stroke" x1="25" y1="10" x2="25" y2="54"/><line class="stroke" x1="39" y1="10" x2="39" y2="54"/><circle class="dot" cx="39" cy="25" r="4"/></svg>
-          <span><span class="mt-k">Service 02</span><span class="mt-t">Aerial Mapping &amp; Progress Reporting</span></span><span class="mt-arrow">→</span>
+          <span><span class="mt-k">Service 02</span><span class="mt-t">Aerial Mapping &amp; FPV Cinematography</span></span><span class="mt-arrow">→</span>
         </button>
         <button class="mtab" role="tab" id="tab-inspection" aria-controls="vp" aria-selected="false" data-m="inspection">
           <svg viewBox="0 0 64 64" fill="none" stroke-width="2.5" aria-hidden="true"><polyline class="stroke" points="8,30 32,10 56,30"/><rect class="stroke" x="14" y="30" width="36" height="24"/><circle class="dot" cx="32" cy="22" r="4"/></svg>
@@ -424,7 +432,7 @@ footer p{max-width:70ch}
 <section id="mapping">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Service 02 · Aerial mapping &amp; progress</span>
+      <span class="eyebrow">Service 02 · Aerial mapping &amp; FPV cinematography</span>
       <h2 class="h2">See your project the way your investors want to.</h2>
       <p class="lead">We fly a planned grid, capture hundreds of overlapping photos, and stitch them into a measured map with a date on it. Run a sample survey to watch how it works.</p>
     </div>
@@ -449,6 +457,20 @@ footer p{max-width:70ch}
           <li>Land-plot reports for diaspora buyers, made with a licensed surveyor for boundary accuracy</li>
         </ul>
         <div><a class="btn btn-secondary" href="#contact">Book a site survey</a></div>
+      </div>
+    </div>
+    <div class="film">
+      <figure><img src="img/fpv-drone.jpg" alt="FPV quadcopter used for fly-through filming" loading="lazy"><figcaption>FPV cinematography</figcaption></figure>
+      <div>
+        <span class="eyebrow">FPV cinematography · Property and events</span>
+        <h3 class="h3">One unbroken shot, from the gate to the rooftop.</h3>
+        <p class="lead">A small FPV drone flies where a camera drone can't: through doorways, down corridors and out over the view, in a single continuous take. Buyers get a feel for the whole property before they visit, and events get footage that looks like no one else's.</p>
+        <ul class="check">
+          <li>Fly-through films for homes, apartments, hotels and developments for sale or rent</li>
+          <li>Event films for launches, weddings, conferences and venues, planned with the organiser and flown to GCAA rules</li>
+          <li>Short vertical cuts for Instagram, TikTok and listing sites, delivered with the full film</li>
+        </ul>
+        <div><a class="btn btn-secondary" href="#contact">Plan a shoot</a></div>
       </div>
     </div>
   </div>
@@ -488,15 +510,16 @@ footer p{max-width:70ch}
     <div class="academy">
       <div>
         <div class="sec-head" style="margin-bottom:0">
-          <span class="eyebrow">Service 01 · Drone Pilot Academy · Fly with Ally</span>
-          <h2 class="h2">From first flight to FPV racing.</h2>
-          <p class="lead">Ghana's hands-on drone academy. Three days, one certificate, and a new way to see the world. Anyone can learn to fly.</p>
+          <span class="eyebrow">Service 01 · Drone Academy · Fly with Ally</span>
+          <h2 class="h2">Learn to fly. Learn to build.</h2>
+          <p class="lead">Hands-on drone training in Accra. Start on a simulator, fly real drones with an instructor, or build your own drone and take it on its first flight. Anyone can learn, and no experience is needed.</p>
         </div>
         <div class="path">
           <div class="step"><span class="k">Day 1</span><div><b>Ground school</b><span>Airspace, GCAA rules, pre-flight checks and safety.</span></div></div>
           <div class="step"><span class="k">Day 2</span><div><b>Handling</b><span>Simulator hours, then real field time with an instructor.</span></div></div>
           <div class="step"><span class="k">Day 3</span><div><b>Applied missions</b><span>Plan and fly a real mapping or inspection job.</span></div></div>
-          <div class="step"><span class="k">Add-on</span><div><b>FPV &amp; racing track</b><span>Indoor "tiny whoop" sessions, then outdoor FPV for schools and clubs.</span></div></div>
+          <div class="step"><span class="k">Build</span><div><b>Build &amp; fly track</b><span>Assemble a quadcopter or FPV drone: frame, motors, flight controller and radio. Set it up, then fly the drone you built.</span></div></div>
+          <div class="step"><span class="k">FPV</span><div><b>FPV track</b><span>Goggles on, tiny indoor drones first, then outdoor FPV for schools and clubs.</span></div></div>
         </div>
         <div class="ctas"><a class="btn btn-primary" href="#contact"><span class="dot"></span>Book the next cohort</a><a class="btn btn-secondary" href="#contact">Bring this to your school</a></div>
       </div>
@@ -514,8 +537,8 @@ footer p{max-width:70ch}
           </div>
         </div>
         <div class="duo">
-          <figure><img src="img/fpv-drone.jpg" alt="Red FPV racing quadcopter" loading="lazy"><figcaption>FPV &amp; racing track</figcaption></figure>
-          <figure><img src="img/drone-over-sea.jpg" alt="A drone hovering over the sea" loading="lazy"><figcaption>Field sessions</figcaption></figure>
+          <figure><img src="img/academy-build.jpg" alt="Hands assembling a quadcopter frame with motors and a flight controller" loading="lazy"><figcaption>Build &amp; fly track</figcaption></figure>
+          <figure><img src="img/academy-simulator.jpg" alt="Flight simulator on screen with a drone radio controller and gamepad on the desk" loading="lazy"><figcaption>Simulator sessions</figcaption></figure>
         </div>
       </div>
     </div>
@@ -585,7 +608,7 @@ footer p{max-width:70ch}
           </div>
           <div class="two">
             <div class="field"><label for="fService">Service</label>
-              <select id="fService" name="service"><option>Aerial mapping &amp; progress</option><option>Land-plot report</option><option>Roof &amp; building inspection</option><option>Academy course</option><option>Corporate or school training</option></select></div>
+              <select id="fService" name="service"><option>Aerial mapping &amp; progress</option><option>Land-plot report</option><option>FPV film: property or event</option><option>Roof &amp; building inspection</option><option>Drone Academy: flying course</option><option>Drone Academy: build &amp; fly course</option><option>Corporate or school training</option></select></div>
             <div class="field"><label for="fSite">Site location</label><input id="fSite" name="site" placeholder="e.g. East Legon, Tema, Kasoa"></div>
           </div>
           <div class="field"><label for="fMsg">What do you need to see?</label><textarea id="fMsg" name="msg" placeholder="Site size, timeline, what decisions the images will support"></textarea></div>
@@ -699,10 +722,10 @@ footer p{max-width:70ch}
 
   /* ---------- Missions ---------- */
   var MISSIONS={
-    academy:{mode:'Mission · Academy',coord:'05.6500° N · 0.1860° W',title:'Learn to fly, properly.',cta:['Explore the Academy','#academy'],
-      list:['3-day and multi-week courses, from beginner to commercial track','Simulator plus real field time','FPV and drone racing add-on for students and schools','Group training for companies']},
-    mapping:{mode:'Mission · Mapping',coord:'05.6180° N · 0.1720° W',title:'Track your build from above.',cta:['See a sample survey','#mapping'],
-      list:['Orthomosaics, 3D models and measured volumes','Dated monthly progress visits, ready for investors','Land-plot reports you can check from anywhere in the world']},
+    academy:{mode:'Mission · Academy',coord:'05.6500° N · 0.1860° W',title:'Learn to fly. Learn to build.',cta:['Explore the Academy','#academy'],
+      list:['Flying courses, from first flight to commercial track','Build & fly: assemble your own quadcopter or FPV drone','Simulator plus real field time','Courses for schools, clubs and companies']},
+    mapping:{mode:'Mission · Mapping & FPV',coord:'05.6180° N · 0.1720° W',title:'Map it. Film it.',cta:['See a sample survey','#mapping'],
+      list:['Orthomosaics, 3D models and measured volumes','Dated monthly progress visits, ready for investors','FPV fly-through films for property listings and events','Land-plot reports you can check from anywhere in the world']},
     inspection:{mode:'Mission · Inspection',coord:'05.5560° N · 0.1960° W',title:'Know your roof without the risk.',cta:['Try the inspection loupe','#inspection'],
       list:['Full roof and façade imagery','Defects mapped and rated by severity','Optional thermal pass for moisture','Reports for insurance, maintenance or a sale']}
   };

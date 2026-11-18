@@ -1,6 +1,6 @@
 # Ally Drones website
 
-The website for Ally Drones: drone pilot training, aerial mapping and building inspection in Accra, Ghana.
+The website for Ally Drones: the Drone Academy (flying and drone building), aerial mapping and FPV cinematography, and building inspection in Accra, Ghana.
 
 It's a single static page (`index.html` and `img/`), served by GitHub Pages from the `main` branch root. There's no build step.
 
