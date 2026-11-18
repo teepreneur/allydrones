@@ -35,6 +35,8 @@
   "logo": "https://allydronesllc.com/apple-touch-icon.png",
   "image": "https://allydronesllc.com/img/og-image.jpg",
   "description": "Drone pilot training, drone building courses, aerial mapping, FPV cinematography and building inspection in Accra, Ghana.",
+  "email": "allydrones@gmail.com",
+  "telephone": "+233248932204",
   "address": {"@type": "PostalAddress", "addressLocality": "Accra", "addressRegion": "Greater Accra", "addressCountry": "GH"},
   "areaServed": [{"@type": "City", "name": "Accra"}, {"@type": "Country", "name": "Ghana"}],
   "knowsAbout": ["Drone pilot training", "Drone building", "FPV drones", "Aerial mapping", "Drone roof inspection", "FPV cinematography"],
@@ -636,8 +638,8 @@ footer p{max-width:70ch}
         <h2 style="margin-top:18px">Let's fly.</h2>
         <p>Trained pilots. Trusted eyes. Ghana's skies.</p>
         <div class="contact-list">
-          <div><span>EMAIL</span><b>[hello@allydrones…]</b></div>
-          <div><span>PHONE</span><b>[+233 …]</b></div>
+          <div><span>EMAIL</span><b><a href="mailto:allydrones@gmail.com">allydrones@gmail.com</a></b></div>
+          <div><span>PHONE</span><b><a href="tel:+233248932204">024 893 2204</a> · <a href="https://wa.me/233248932204">WhatsApp</a></b></div>
           <div><span>BASE</span><b>Accra, Ghana</b></div>
           <div><span>SOCIAL</span><b><a href="https://www.instagram.com/allydrones/" rel="me">Instagram</a> · <a href="https://www.facebook.com/profile.php?id=61596692040398" rel="me">Facebook</a> · <a href="https://www.linkedin.com/company/ally-drones/" rel="me">LinkedIn</a></b></div>
         </div>
@@ -660,9 +662,9 @@ footer p{max-width:70ch}
         <div class="done" id="formDone" hidden>
           <span class="eyebrow" id="doneRef">Request logged</span>
           <b>Thanks. Your request is ready.</b>
-          <p style="color:var(--haze)">This page isn't connected to email yet, so nothing has been sent. Copy the summary below and send it to the Ally Drones email address on this page.</p>
+          <p style="color:var(--haze)">Nothing has been sent yet. Send the summary below to Ally Drones by email or WhatsApp and we'll reply.</p>
           <pre id="doneSummary" style="white-space:pre-wrap;font:400 13px/1.6 var(--font-mono);background:var(--navy);border:1px solid var(--navy-line);border-radius:4px;padding:14px;margin:0;color:var(--field)"></pre>
-          <div class="ctas" style="margin-top:4px"><button class="btn btn-primary" type="button" id="copySummary">Copy summary</button><button class="btn btn-secondary" type="button" id="newReq">New request</button></div>
+          <div class="ctas" style="margin-top:4px"><a class="btn btn-primary" id="sendEmail" href="mailto:allydrones@gmail.com"><span class="dot"></span>Send by email</a><a class="btn btn-secondary" id="sendWa" href="https://wa.me/233248932204" target="_blank" rel="noopener">Send on WhatsApp</a><button class="btn btn-secondary" type="button" id="copySummary">Copy summary</button><button class="btn btn-secondary" type="button" id="newReq">New request</button></div>
         </div>
       </form>
     </div>
@@ -991,6 +993,9 @@ footer p{max-width:70ch}
     var ref='AD-'+pad(Math.floor(Math.random()*9000)+1000,4);
     $('doneRef').textContent='Request '+ref;
     $('doneSummary').textContent=['FLIGHT REQUEST '+ref,'Name: '+n.value.trim(),'Contact: '+c.value.trim(),'Service: '+$('fService').value,'Site: '+($('fSite').value.trim()||'—'),'Details: '+($('fMsg').value.trim()||'—')].join('\n');
+    var sum=$('doneSummary').textContent;
+    $('sendEmail').href='mailto:allydrones@gmail.com?subject='+encodeURIComponent('Flight request '+ref)+'&body='+encodeURIComponent(sum);
+    $('sendWa').href='https://wa.me/233248932204?text='+encodeURIComponent(sum);
     $('formBody').hidden=true; $('formDone').hidden=false;
   });
   $('copySummary').addEventListener('click', function(){
